@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahmed Saleh - Digital Connect</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --secondary-gradient: linear-gradient(45deg, #ff6a00cc 0%, #ff007bb0 100%);
+            --background-dark: #121212;
+            --text-light: #f4f4f4;
+        }
+        body {
+            background: var(--background-dark);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+        }
+        .nfc-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .nfc-status {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .nfc-devices {
+            display: grid;
+            gap: 10px;
+        }
+        .device-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="nfc-container">
+        <div class="nfc-status" id="nfcStatus">
+            <h2 class="text-xl font-bold">NFC Sharing</h2>
+            <p id="statusMessage">Checking NFC capabilities...</p>
+        </div>
+
+        <div class="nfc-devices" id="deviceList">
+            <!-- Nearby devices will be listed here -->
+        </div>
+
+        <button id="startNfcBtn" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+            Start NFC Sharing
+        </button>
+
+        <div id="qrCodeSection" class="mt-4">
+            <h3>Can't use NFC? Share via QR</h3>
+            <div id="qrCode"></div>
+        </div>
+    </div>
+
+    <script>
+        // NFC and Peer Discovery Management
+        class DigitalCardShare {
+            constructor() {
+                this.nfcStatus = document.getElementById('nfcStatus');
+                this.deviceList = document.getElementById('deviceList');
+                this.statusMessage = document.getElementById('statusMessage');
+                this.startNfcBtn = document.getElementById('startNfcBtn');
+                this.qrCodeSection = document.getElementById('qrCodeSection');
+
+                this.initializeNfcSharing();
+            }
+
+            initializeNfcSharing() {
+                // Check NFC Capabilities
+                if ('NDEFReader' in window) {
+                    this.statusMessage.textContent = 'NFC is supported!';
+                    this.startNfcBtn.addEventListener('click', () => this.startNfcSharing());
+                } else {
+                    this.statusMessage.textContent = 'NFC not supported on this device.';
+                    this.startNfcBtn.disabled = true;
+                    this.generateQRCode();
+                }
+
+                // Peer-to-Peer Web Sharing Fallback
+                if (navigator.share) {
+                    this.enableWebShare();
+                }
+            }
+
+            async startNfcSharing() {
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+
+                    this.statusMessage.textContent = 'Touch another device to share';
+
+                    ndef.addEventListener("reading", ({ message, serialNumber }) => {
+                        this.handleNfcReading(message, serialNumber);
+                    });
+
+                    ndef.addEventListener("readingerror", () => {
+                        this.statusMessage.textContent = 'Error reading NFC tag';
+                    });
+                } catch (error) {
+                    console.error('NFC scanning failed:', error);
+                    this.statusMessage.textContent = 'NFC scanning failed';
+                }
+            }
+
+            handleNfcReading(message, serialNumber) {
+                // Process NFC data
+                const records = message.records.map(record => 
+                    new TextDecoder().decode(record.data)
+                );
+
+                // Create device entry
+                const deviceEntry = document.createElement('div');
+                deviceEntry.classList.add('device-card');
+                deviceEntry.innerHTML = `
+                    <span>Device: ${serialNumber}</span>
+                    <button class="bg-green-500 text-white px-2 py-1 rounded">Connect</button>
+                `;
+                this.deviceList.appendChild(deviceEntry);
+
+                this.statusMessage.textContent = `Connected to device: ${serialNumber}`;
+            }
+
+            enableWebShare() {
+                this.startNfcBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.share({
+                            title: 'Ahmed Saleh - Digital Card',
+                            text: 'Check out my digital business card!',
+                            url: window.location.href
+                        });
+                    } catch (error) {
+                        console.error('Web share failed:', error);
+                    }
+                });
+            }
+
+            generateQRCode() {
+                // Use a QR code generation library or service
+                // This is a placeholder - you'd typically use a QR code library
+                this.qrCodeSection.innerHTML += `
+                    <img src="/api/placeholder/200/200" alt="QR Code" class="mx-auto">
+                `;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            new DigitalCardShare();
+        });
+    </script>
+</body>
+</html>
