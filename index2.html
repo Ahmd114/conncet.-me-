@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Digital Connect</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
@@ -16,6 +16,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            touch-action: manipulation;
         }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -27,6 +28,8 @@
             justify-content: center;
             perspective: 2000px;
             overflow-x: hidden;
+            overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: transparent;
         }
         .social-container {
             background: rgba(0, 34, 108, 0.161);
@@ -34,14 +37,13 @@
             border: 2px solid rgba(14, 48, 197, 0.668);
             padding: 3rem;
             max-width: 500px;
-            width: 100%;
+            width: 95%;
             text-align: center;
             backdrop-filter: blur(15px);
             box-shadow: 
                 0 50px 100px rgba(0,0,0,0.2),
                 0 15px 30px rgba(115, 0, 246, 0.71),
                 inset 0 0 20px rgba(0, 46, 144, 0.737);
-            transform-style: preserve-3d;
             transition: all 0.6s ease;
         }
         .profile-header {
@@ -61,10 +63,12 @@
                 0 15px 35px rgba(0,0,0,0.2),
                 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.5s ease;
-            transform: translateZ(50px);
+            transform: scale(1);
+            cursor: pointer;
         }
-        .profile-image:hover {
-            transform: translateZ(80px) rotate(360deg);
+        .profile-image:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
         }
         .profile-details {
             margin-top: 1rem;
@@ -83,7 +87,6 @@
         .social-links {
             display: grid;
             gap: 1rem;
-            perspective: 1000px;
         }
         .social-link {
             display: flex;
@@ -96,28 +99,16 @@
             font-weight: 700;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s ease;
-            transform-style: preserve-3d;
-            transform: translateZ(-50px);
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
-        .social-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.1);
-            transform: skewX(-45deg);
-            transition: all 0.5s ease;
-        }
-        .social-link:hover::before {
-            left: 100%;
+        .social-link:active {
+            transform: scale(0.95);
         }
         .social-link i {
             margin-right: 10px;
             font-size: 1.5rem;
-            transform: translateZ(30px);
         }
         .instagram {
             background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
@@ -128,24 +119,22 @@
         .tiktok {
             background-color: #000000;
             color: white;
-            border: 2px solid #333;
-            transition: all 0.3s ease;
-        }
-        .tiktok:hover {
-            background-color: #1a1a1a;
-            box-shadow: 0 0 15px rgba(255,255,255,0.1);
         }
         .snapchat {
             background-color: #FFFC00;
             color: black;
+        }
+        .telegram {
+            background: linear-gradient(45deg, #0088cc, #00a2ff);
         }
         .qr-section {
             margin-top: 2rem;
             opacity: 0.7;
             transition: opacity 0.3s ease;
         }
-        .qr-section:hover {
-            opacity: 1;
+        .qr-section img {
+            max-width: 150px;
+            width: 100%;
         }
         .nfc-badge {
             position: absolute;
@@ -158,6 +147,30 @@
             font-size: 0.8rem;
             transform: rotate(15deg);
         }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            .social-container {
+                padding: 2rem 1rem;
+                width: 95%;
+                margin: 0 auto;
+            }
+            .profile-image {
+                width: 150px;
+                height: 150px;
+            }
+            .name {
+                font-size: 1.5rem;
+            }
+            .social-link {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            .social-link i {
+                font-size: 1.2rem;
+                margin-right: 8px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -165,10 +178,10 @@
     <div class="social-container" id="socialContainer">
         <div class="nfc-badge">NFC Card</div>
         <div class="profile-header">
-            <img src="profile.png" alt="Profile" class="profile-image">
+            <img src="profile.png" alt="Profile" class="profile-image" id="profileImage">
             <div class="profile-details">
                 <h1 class="name">AHMED SALEH</h1>
-                <p class="tagline">The Man | </p>
+                <p class="tagline">The Man | Connected</p>
             </div>
         </div>
 
@@ -196,57 +209,78 @@
                 <i class="fab fa-snapchat-ghost"></i>
                 Snapchat
             </a>
+
+            <!-- Telegram Link -->
+            <a href="https://t.me/your_telegram_username" target="_blank" class="social-link telegram">
+                <i class="fab fa-telegram-plane"></i>
+                Telegram
+            </a>
         </div>
 
         <div class="qr-section">
             <p class="text-xs text-gray-400 mt-4">Scan to save my contact</p>
             <img src="/api/placeholder/150/150" alt="QR Code" class="mx-auto mt-2 rounded-lg">
-            <a href="index2.html" target="_blank" class="click"><i class="fa-likee"> click here</i></a>
         </div>
     </div>
 
     <script>
-        // 3D Tilt Effect
+        // Mobile-friendly interactions
         const container = document.getElementById('socialContainer');
-        container.addEventListener('mousemove', (e) => {
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const rotateX = (y - centerY) / 20;
-            const rotateY = -(x - centerX) / 20;
-            
-            container.style.transform = `
-                perspective(2000px) 
-                rotateX(${rotateX}deg) 
-                rotateY(${rotateY}deg) 
-                translateZ(50px)
-            `;
+        const profileImage = document.getElementById('profileImage');
+
+        // Prevent default touch behaviors that might interfere with interactions
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Remove 3D tilt for mobile to improve performance
+        function handleMouseMove(e) {
+            if (window.innerWidth > 768) {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = (y - centerY) / 20;
+                const rotateY = -(x - centerX) / 20;
+                
+                container.style.transform = `
+                    perspective(2000px) 
+                    rotateX(${rotateX}deg) 
+                    rotateY(${rotateY}deg) 
+                    translateZ(50px)
+                `;
+            }
+        }
+
+        // Only add 3D tilt for non-mobile devices
+        if (window.innerWidth > 768) {
+            container.addEventListener('mousemove', handleMouseMove);
+
+            container.addEventListener('mouseleave', () => {
+                container.style.transform = 'perspective(2000px) rotateX(0) rotateY(0) translateZ(0)';
+            });
+        }
+
+        // Image interaction
+        profileImage.addEventListener('click', () => {
+            profileImage.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                profileImage.style.transform = 'scale(1)';
+            }, 200);
         });
 
-        container.addEventListener('mouseleave', () => {
-            container.style.transform = 'perspective(2000px) rotateX(0) rotateY(0) translateZ(0)';
-        });
-
-        // Interaction Feedback
-        const socialLinks = document.querySelectorAll('.social-link');
-        socialLinks.forEach(link => {
-            link.addEventListener('mouseenter', () => {
-                link.style.transform = 'translateZ(30px) scale(1.05)';
-            });
-            link.addEventListener('mouseleave', () => {
-                link.style.transform = 'translateZ(-50px) scale(1)';
-            });
-            link.addEventListener('click', (e) => {
-                link.style.transform = 'translateZ(30px) scale(0.95)';
-                setTimeout(() => {
-                    link.style.transform = 'translateZ(-50px) scale(1)';
-                }, 200);
-            });
-        });
+        // Prevent zooming on double-tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
     </script>
 </body>
 </html>
